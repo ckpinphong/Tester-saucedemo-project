@@ -19,7 +19,7 @@ const loginData = {
     usernameLocator: '[data-test="username"]',
     passwordLocator: '[data-test="password"]',
     loginButtonLocator: '[data-test="login-button"]',
-    expectedUrlRegex: /.*inventory/
+    expectedUrlRegex: /inventory/
 };
 
 test('Positive: Login with valid username and password', async ({ page }) => {
@@ -42,7 +42,7 @@ test('Positive: Login with problem user', async ({ page }) => {
     await page.locator('[data-test="username"]').fill('problem_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await expect(page).toHaveTitle(/Swag Labs/);
     await expect(page.locator('[data-test="title"]')).toBeVisible('Products');
     await expect(page.locator('[data-test="inventory-item-sauce-labs-backpack-img"]')).toBeVisible('sl-404.168b1cce.jpg');
@@ -53,7 +53,7 @@ test('Positive: Login with performance glitch user', async ({ page }) => {
     await page.locator('[data-test="username"]').fill('performance_glitch_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await expect(page).toHaveTitle(/Swag Labs/);
     await expect(page.locator('[data-test="title"]')).toBeVisible('Products');
 });
@@ -74,7 +74,7 @@ test('Positive: Login with visual user', async ({ page }) => {
     await page.locator('[data-test="username"]').fill('visual_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await expect(page).toHaveTitle(/Swag Labs/);
     await expect(page.locator('[data-test="title"]')).toBeVisible('Products');
     //visual user จะสุ่มราคาทุกครั้งที่รีเฟรชหน้าจอ
@@ -126,7 +126,7 @@ test('Positive: Check the products are displayed correctly', async ({ page}) => 
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
 
     const productTitles = [
         'Sauce Labs Bike Light',
@@ -152,7 +152,7 @@ test('Positive: Add product "Sauce Labs Backpack" to the cart' , async ({ page})
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
 
     const backpackButton = page.locator('[data-test="add-to-cart-sauce-labs-backpack"]');
     await backpackButton.click();
@@ -165,11 +165,27 @@ test('Positive: Add product"Sauce Labs Bike Light" to the cart' , async ({ page}
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
 
     await page.locator('[data-test="add-to-cart-sauce-labs-bike-light"]').click();
     await expect(page.locator('[data-test="remove-sauce-labs-bike-light"]')).toHaveText('Remove');
+});
+
+test('Positive: Sort products by price from low to high', async ({ page }) => {
+
+    await page.goto('https://www.saucedemo.com/');
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="password"]').fill('secret_sauce');
+    await page.locator('[data-test="login-button"]').click();
+    await expect(page).toHaveURL(/inventory/);
+    await page.selectOption('.product_sort_container', { label: 'Price (low to high)' });
+    await page.waitForSelector('.inventory_item');
+//  ตรวจสอบว่า item 3 อย่างแรกถูกต้อง Array แปลงข้อมูลเป็น float แล้วตัด $ กับช่องว่างออก
+    const prices = await page.$$eval('.inventory_item_price', prices => prices.map(price => parseFloat(price.textContent.replace('$', '').trim())));
+//  เช็คว่า items 3 อย่างแรกถูกต้องตามลำดับ low-high
+    await expect(prices[0]).toBeLessThanOrEqual(prices[1]);
+    await expect(prices[1]).toBeLessThanOrEqual(prices[2]);
 });
 
 test('Positive: Sort products by price from high to low', async ({ page }) => {
@@ -178,7 +194,7 @@ test('Positive: Sort products by price from high to low', async ({ page }) => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await page.selectOption('.product_sort_container', { label: 'Price (high to low)' });
     await page.waitForSelector('.inventory_item');
 //  ตรวจสอบว่า item 3 อย่างแรกถูกต้อง Array แปลงข้อมูลเป็น float แล้วตัด $ กับช่องว่างออก
@@ -193,7 +209,7 @@ test('Positive: Verify that product descriptions are visible', async ({ page}) =
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await page.locator('[data-test="inventory-item-sauce-labs-backpack-img"]').click();
     await expect(page.locator('[data-test="inventory-item-desc"]')).toHaveText('carry.allTheThings() with the sleek, streamlined Sly Pack that melds uncompromising style with unequaled laptop and tablet protection.');
 });
@@ -203,11 +219,11 @@ test('Positive: Verify that user can go to the cart page' , async ({ page }) => 
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
     await page.locator('[data-test="add-to-cart-sauce-labs-bike-light"]').click();
     await page.locator('[data-test="shopping-cart-link"]').click();
-    await expect(page).toHaveURL(/.*cart/);
+    await expect(page).toHaveURL(/cart/);
     await expect(page.locator('[data-test="title"]')).toHaveText('Your Cart');   
 });
 
@@ -216,11 +232,11 @@ test('Positive: Remove an item from the cart' , async ({ page }) => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
     await page.locator('[data-test="add-to-cart-sauce-labs-bike-light"]').click();
     await page.locator('[data-test="shopping-cart-link"]').click();
-    await expect(page).toHaveURL(/.*cart/);
+    await expect(page).toHaveURL(/cart/);
 
     await page.locator('[data-test="remove-sauce-labs-backpack"]').click();
     await expect(page.locator('[data-test="shopping-cart-badge"]')).toHaveText('1');
@@ -232,13 +248,13 @@ test('Positive: Verify that user can proceed to checkout' , async ({ page }) => 
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
     await page.locator('[data-test="shopping-cart-link"]').click();
-    await expect(page).toHaveURL(/.*cart/);
+    await expect(page).toHaveURL(/cart/);
 
     await page.locator('[data-test="checkout"]').click();
-    await expect(page).toHaveURL(/.*step-one/);
+    await expect(page).toHaveURL(/step-one/);
     await expect(page.locator('[data-test="title"]')).toBeVisible('Checkout: Your Information');
 });
 
@@ -247,19 +263,19 @@ test('Positive: Enter valid information for checkout' , async ({ page }) => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
     await page.locator('[data-test="shopping-cart-link"]').click();
-    await expect(page).toHaveURL(/.*cart/);
+    await expect(page).toHaveURL(/cart/);
     await page.locator('[data-test="checkout"]').click();
-    await expect(page).toHaveURL(/.*step-one/);
+    await expect(page).toHaveURL(/step-one/);
     await expect(page.locator('[data-test="title"]')).toBeVisible('Checkout: Your Information');
 
     await page.locator('[data-test="firstName"]').fill('John');
     await page.locator('[data-test="lastName"]').fill('Nonlen');
     await page.locator('[data-test="postalCode"]').fill('80000');
     await page.locator('[data-test="continue"]').click();
-    await expect(page).toHaveURL(/.*step-two/);
+    await expect(page).toHaveURL(/step-two/);
     await expect(page.locator('[data-test="title"]')).toBeVisible('Checkout: Overview');
     await expect(page.locator('[data-test="payment-info-label"]')).toBeVisible('Payment Information:');
     await expect(page.locator('[data-test="shipping-info-label"]')).toBeVisible('Shipping Information:');
@@ -271,12 +287,12 @@ test('Negative: Enter invalid information for checkout (empty first name)' , asy
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
     await page.locator('[data-test="shopping-cart-link"]').click();
-    await expect(page).toHaveURL(/.*cart/);
+    await expect(page).toHaveURL(/cart/);
     await page.locator('[data-test="checkout"]').click();
-    await expect(page).toHaveURL(/.*step-one/);
+    await expect(page).toHaveURL(/step-one/);
     await expect(page.locator('[data-test="title"]')).toBeVisible('Checkout: Your Information');
 
     await page.locator('[data-test="lastName"]').fill('Nonlen');
@@ -290,12 +306,12 @@ test('Negative: Enter invalid information for checkout (empty last name)' , asyn
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
     await page.locator('[data-test="shopping-cart-link"]').click();
-    await expect(page).toHaveURL(/.*cart/);
+    await expect(page).toHaveURL(/cart/);
     await page.locator('[data-test="checkout"]').click();
-    await expect(page).toHaveURL(/.*step-one/);
+    await expect(page).toHaveURL(/step-one/);
     await expect(page.locator('[data-test="title"]')).toBeVisible('Checkout: Your Information');
 
     await page.locator('[data-test="firstName"]').fill('John');
@@ -309,12 +325,12 @@ test('Negative: Enter invalid information for checkout (empty zip/postal code)' 
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
     await page.locator('[data-test="shopping-cart-link"]').click();
-    await expect(page).toHaveURL(/.*cart/);
+    await expect(page).toHaveURL(/cart/);
     await page.locator('[data-test="checkout"]').click();
-    await expect(page).toHaveURL(/.*step-one/);
+    await expect(page).toHaveURL(/step-one/);
     await expect(page.locator('[data-test="title"]')).toBeVisible('Checkout: Your Information');
 
     await page.locator('[data-test="firstName"]').fill('John');
@@ -328,28 +344,28 @@ test('Positive: Verify order summary' , async ({ page }) => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
     await page.locator('[data-test="shopping-cart-link"]').click();
-    await expect(page).toHaveURL(/.*cart/);
+    await expect(page).toHaveURL(/cart/);
     await page.locator('[data-test="checkout"]').click();
-    await expect(page).toHaveURL(/.*step-one/);
+    await expect(page).toHaveURL(/step-one/);
     await expect(page.locator('[data-test="title"]')).toBeVisible('Checkout: Your Information');
 
     await page.locator('[data-test="firstName"]').fill('John');
     await page.locator('[data-test="lastName"]').fill('Nonlen');
     await page.locator('[data-test="postalCode"]').fill('80000');
     await page.locator('[data-test="continue"]').click();
-    await expect(page).toHaveURL(/.*step-two/);
+    await expect(page).toHaveURL(/step-two/);
     await expect(page.locator('[data-test="title"]')).toBeVisible('Checkout: Overview');
-    await expect(page.locator('[data-test="inventory-item-name"]')).toBeVisible(/.*29.99/);
-    await expect(page.locator('[data-test="inventory-item-price"]')).toBeVisible(/.*29.99/);
+    await expect(page.locator('[data-test="inventory-item-name"]')).toBeVisible(/29.99/);
+    await expect(page.locator('[data-test="inventory-item-price"]')).toBeVisible(/29.99/);
     await expect(page.locator('[data-test="payment-info-label"]')).toBeVisible('Payment Information:');
     await expect(page.locator('[data-test="payment-info-value"]')).toBeVisible('SauceCard #31337');
     await expect(page.locator('[data-test="shipping-info-label"]')).toBeVisible('Shipping Information:');
     await expect(page.locator('[data-test="shipping-info-value"]')).toBeVisible('Free Pony Express Delivery!');
     await expect(page.locator('[data-test="total-info-label"]')).toBeVisible('Price Total');
-    await expect(page.locator('[data-test="inventory-item-price"]')).toBeVisible(/.*29.99/);
+    await expect(page.locator('[data-test="inventory-item-price"]')).toBeVisible(/29.99/);
 });
 
 test('Positive: Complete the order' , async ({ page }) => {
@@ -357,21 +373,21 @@ test('Positive: Complete the order' , async ({ page }) => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="password"]').fill('secret_sauce');
     await page.locator('[data-test="login-button"]').click();
-    await expect(page).toHaveURL(/.*inventory/);
+    await expect(page).toHaveURL(/inventory/);
     await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
     await page.locator('[data-test="shopping-cart-link"]').click();
-    await expect(page).toHaveURL(/.*cart/);
+    await expect(page).toHaveURL(/cart/);
     await page.locator('[data-test="checkout"]').click();
-    await expect(page).toHaveURL(/.*step-one/);
+    await expect(page).toHaveURL(/step-one/);
     await expect(page.locator('[data-test="title"]')).toBeVisible('Checkout: Your Information');
 
     await page.locator('[data-test="firstName"]').fill('John');
     await page.locator('[data-test="lastName"]').fill('Nonlen');
     await page.locator('[data-test="postalCode"]').fill('80000');
     await page.locator('[data-test="continue"]').click();
-    await expect(page).toHaveURL(/.*step-two/);
+    await expect(page).toHaveURL(/step-two/);
     await page.locator('[data-test="finish"]').click();
-    await expect(page).toHaveURL(/.*checkout-complete/);
+    await expect(page).toHaveURL(/checkout-complete/);
     await expect(page.locator('[data-test="complete-header"]')).toBeVisible('Thank you for your order!');
 });
 
